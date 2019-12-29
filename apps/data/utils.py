@@ -19,5 +19,5 @@ def format_pair(data: dict, specified_keys: list = None) -> dict:
 
 
 def reset_ttl(queryset: QuerySet) -> None:
-    queryset.update(ttl=timezone.localtime() +
+    queryset.update(ttl=timezone.now() +
                     datetime.timedelta(seconds=settings.DEFAULT_TTL))

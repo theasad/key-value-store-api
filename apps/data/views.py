@@ -28,6 +28,8 @@ class KeyValAPIView(views.APIView):
         queryset = KeyVal.objects.non_expired()
         if keys_list:
             queryset = queryset.filter(key__in=keys_list)
+            # Update ttl with new ttl
+            reset_ttl(queryset)
         serializer = KeyValStoreSerializer(queryset, many=True)
         response = format_pair(serializer.data)
         return Response(response)
