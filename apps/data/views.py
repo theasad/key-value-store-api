@@ -9,8 +9,7 @@ from apps.data.utils import reset_ttl, format_pair
 
 class KeyValAPIView(views.APIView):
     def post(self, request, format=None):
-        data = self.request.data
-        if data:
+        if data := self.request.data:
             # Formating data with key and value
             data_list = [{'key': key, 'value': value}
                          for key, value in data.items()]
@@ -35,22 +34,20 @@ class KeyValAPIView(views.APIView):
         return Response(response)
 
     def patch(self, request, *args, **kwargs):
-        data = request.data
-        if data:
-            # Formating data with key and value
-            non_expired_kv_queryset = KeyVal.objects.non_expired()
-            key_list = []
-            for key, value in data.items():
-                try:
-                    kv_obj = non_expired_kv_queryset.get(key=key)
-                    kv_obj.value = value
-                    kv_obj.save()
-                    key_list.append(key)
-                except KeyVal.DoesNotExist:
-                    pass
-            queryset = non_expired_kv_queryset.filter(key__in=key_list)
-            serializer = KeyValStoreSerializer(queryset, many=True)
-            response = format_pair(serializer.data)
-            return Response(response, status=status.HTTP_200_OK)
-        else:
+        if not (data := request.data):
             return Response({'details': 'No data provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Formating data with key and value
+        non_expired_kv_queryset = KeyVal.objects.non_expired()
+        key_list = []
+        for key, value in data.items():
+            try:
+                kv_obj = non_expired_kv_queryset.get(key=key)
+                kv_obj.value = value
+                kv_obj.save()
+                key_list.append(key)
+            except KeyVal.DoesNotExist:
+                pass
+        queryset = non_expired_kv_queryset.filter(key__in=key_list)
+        serializer = KeyValStoreSerializer(queryset, many=True)
+        response = format_pair(serializer.data)
+        return Response(response, status=status.HTTP_200_OK)
